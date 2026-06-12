@@ -8,26 +8,27 @@ using HarmonyLib;
 using MonoMod.RuntimeDetour;
 using UnityEngine;
 
-namespace ModNamespace
+namespace ScavMP
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        public const string ModGUID = "05126619z.template";
-        public const string ModName = "Template";
+        public const string ModGUID = "05126619z.scavmp";
+        public const string ModName = "Scav MP";
         public const string ModVersion = "0.0.0";
 
-        internal static new ManualLogSource Logger;
+        internal static new Logger Logger;
         private readonly Harmony _harmony = new(ModGUID);
         public static Plugin Instance { get; private set; } = null!;
 
-        public void Awake()
+        void Awake()
         {
-            Logger = base.Logger;
+            Logger = new(new ManualLogSource(ModName));
             Instance = this;
-
             _harmony.PatchAll();
-            Logger.LogInfo($"Plugin ModName is loaded!");
+            Logger.Log($"Plugin {ModName} is loaded!");
         }
+
+        void OnDestroy() { }
     }
 }

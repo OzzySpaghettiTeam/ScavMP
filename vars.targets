@@ -1,8 +1,10 @@
 <Project>
   <PropertyGroup>
-    <BaseGamePath>/home/ssd/Downloads/CasualtiesUnknownV5.1Demo/CasualtiesUnknownDemo/</BaseGamePath> <!--Set this to the game's main folder-->
+    <!--Set this to your project's name-->
+    <ProjectName>ScavMP</ProjectName>
+    <!--Set this to the game's main folder-->
+    <BaseGamePath>/home/ssd/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Casualties Unknown Demo/</BaseGamePath>
     <BepInExDir>$(BaseGamePath)/BepInEx</BepInExDir>
     <GameAssembliesDir>$(BaseGamePath)/CasualtiesUnknown_Data/Managed</GameAssembliesDir>
-	  <PluginDirName>Template</PluginDirName>
   </PropertyGroup>
 </Project>
