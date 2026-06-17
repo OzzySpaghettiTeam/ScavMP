@@ -13,7 +13,10 @@ public static class ScavMPTypes
         RuntimeEntityTypesMap.Instance.Register(100, e => new BaseExpie(e));
         RuntimeEntityTypesMap.Instance.Register(101, e => new BaseExpieController(e));
         RuntimeEntityTypesMap.Instance.Register(102, e => new UnityPhysicsManager(e));
-        RuntimeEntityTypesMap.Instance.Register(102, e => new BaseWorld(e).Init(worldGen));
+        RuntimeEntityTypesMap.Instance.Register(
+            102,
+            e => new BaseWorld(e).Init(WorldGeneration.world)
+        );
         _registered = true;
     }
 }

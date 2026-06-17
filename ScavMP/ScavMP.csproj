@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>$(ProjectName)</AssemblyName>
     <Product>Adds multiplayer to the game</Product>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -10,6 +10,7 @@
 			https://nuget.bepinex.dev/v3/index.json;
 			https://nuget.samboy.dev/v3/index.json
 		</RestoreAdditionalProjectSources>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
@@ -26,9 +27,13 @@
     />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.62" IncludeAssets="compile" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" IncludeAssets="compile" />
-    <PackageReference Include="Lib.Harmony" Version="2.4.2" />
-    <PackageReference Include="LiteEntitySystem" Version="1.2.2" Publicize="true"/>
+    <PackageReference Include="Lib.Harmony" Version="2.4.2" IncludeAssets="compile"/>
     <PackageReference Include="LiteNetLib" Version="2.1.4" />
+    <PackageReference Include="UniTask" Version="2.5.11" />
+
+    <Reference Include="LiteEntitySystem">
+      <HintPath>thirdparty/LiteEntitySystem.dll</HintPath>
+    </Reference>
 
     <Reference Include="Assembly-CSharp" Publicize="true">
       <HintPath>$(GameAssembliesDir)/Assembly-CSharp.dll</HintPath>
@@ -56,35 +61,53 @@
   </ItemGroup>
 
   <PropertyGroup>
-  <RequiredFilesToCopy>$(ProjectName).dll;$(ProjectName).pdb</RequiredFilesToCopy>
-  <RequiredFoldersToCopy></RequiredFoldersToCopy>
-  <!-- dll: Debug → scripts/, Release → plugins/ -->
+  <!-- Папки, которые нужно скопировать целиком со всем содержимым -->
+  <RequiredFoldersToCopy>thirdparty;</RequiredFoldersToCopy>
+
+  <!-- Файлы (например, зависимости .dll), которые нужно скопировать всегда в plugins -->
+  <FilesToCopy></FilesToCopy>  <!-- пример: thirdparty\MyLib.dll;thirdparty\Another.dll -->
+</PropertyGroup>
+
+<PropertyGroup>
+  <!-- Основная папка для вывода DLL/PDB: при Release → plugins, при Debug → scripts -->
   <PluginDeployDir Condition="'$(Configuration)' == 'Release'">$(BepInExDir)/plugins/$(ProjectName)</PluginDeployDir>
   <PluginDeployDir Condition="'$(Configuration)' == 'Debug'">$(BepInExDir)/scripts/$(ProjectName)</PluginDeployDir>
-  <!-- папки: всегда в plugins/ -->
+
+  <!-- Дополнительные файлы/папки всегда копируются в plugins -->
   <PluginAssetsDir>$(BepInExDir)/plugins/$(ProjectName)</PluginAssetsDir>
 </PropertyGroup>
 
-<Target Name="CopyOutputDllsToPluginsFolder" AfterTargets="AfterBuild" Condition="'$(RequiredFilesToCopy)' != ''">
+<!-- Копируем сборку и отладочные символы -->
+<Target Name="CopyModOutput" AfterTargets="AfterBuild">
   <MakeDir Directories="$(PluginDeployDir)" />
-  <CombinePath BasePath="$(OutDir)" Paths="$(RequiredFilesToCopy)">
-    <Output TaskParameter="CombinedPaths" ItemName="RequiredFilesToCopy_Combined" />
-  </CombinePath>
-  <Copy
-    SourceFiles="@(RequiredFilesToCopy_Combined)"
-    DestinationFolder="$(PluginDeployDir)"
-  />
+  <Copy SourceFiles="$(OutDir)$(TargetName)$(TargetExt)"
+        DestinationFolder="$(PluginDeployDir)" />
+  <Copy SourceFiles="$(OutDir)$(TargetName).pdb"
+        DestinationFolder="$(PluginDeployDir)"
+        Condition="Exists('$(OutDir)$(TargetName).pdb')" />
 </Target>
 
-<Target Name="CopyFoldersToPluginsFolder" AfterTargets="AfterBuild" Condition="'$(RequiredFoldersToCopy)' != ''">
+<!-- Копируем указанные файлы (зависимости и т.п.) всегда в plugins -->
+<Target Name="CopySpecifiedFiles" AfterTargets="AfterBuild"
+        Condition="'$(FilesToCopy)' != ''">
   <MakeDir Directories="$(PluginAssetsDir)" />
   <ItemGroup>
-    <RequiredFolders Include="$(RequiredFoldersToCopy.Split(';'))" />
-    <FilesToCopy Include="%(RequiredFolders.Identity)/**/*" />
+    <_FilesToCopy Include="$(FilesToCopy.Split(';'))" />
+  </ItemGroup>
+  <Copy SourceFiles="@(_FilesToCopy)"
+        DestinationFolder="$(PluginAssetsDir)" />
+</Target>
+
+<!-- Копируем дополнительные папки (если заданы) всегда в plugins -->
+<Target Name="CopyAdditionalFolders" AfterTargets="AfterBuild"
+        Condition="'$(RequiredFoldersToCopy)' != ''">
+  <MakeDir Directories="$(PluginAssetsDir)" />
+  <ItemGroup>
+    <AdditionalFolders Include="$(RequiredFoldersToCopy.Split(';'))" />
+    <FilesToCopy Include="%(AdditionalFolders.Identity)/**/*" />
   </ItemGroup>
   <Copy
     SourceFiles="@(FilesToCopy)"
-    DestinationFiles="@(FilesToCopy->'$(PluginAssetsDir)/%(Identity)')"
-  />
+    DestinationFiles="@(FilesToCopy->'$(PluginAssetsDir)/%(Identity)')" />
 </Target>
 </Project>

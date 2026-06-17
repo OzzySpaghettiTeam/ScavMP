@@ -8,8 +8,9 @@ namespace ScavMP.Shared
 {
     public class BaseExpie : PawnLogic
     {
-        public Body Owner { get; private set; }
-        public Vector2 NetworkedMoveDir { get; private set; }
+        private Body _bodyComponent;
+        private GameObject _bodyGameObject;
+        private PlayerInputPacket _currentInput;
 
         [SyncVarFlags(SyncFlags.Interpolated | SyncFlags.LagCompensated | SyncFlags.SyncGroup1)]
         private SyncVar<Vector2> _position;
@@ -17,24 +18,23 @@ namespace ScavMP.Shared
 
         public Vector2 Position => _position.InterpolatedValue;
 
-        PlayerInputPacket _currentInput = new();
-
         public BaseExpie(EntityParams entityParams)
             : base(entityParams) { }
 
-        public override void RegisterRPC(ref RPCRegistrator r)
+        protected override void OnConstructed()
+        {
+            _bodyGameObject = GameObject.Instantiate(Prefabs.Instance.PlayerPrefab);
+            _bodyComponent = _bodyGameObject.GetComponent<Body>();
+        }
+
+        protected override void RegisterRPC(ref RPCRegistrator r)
         {
             base.RegisterRPC(ref r);
         }
 
-        public void Attach(Body body)
+        protected override void OnDestroy()
         {
-            Owner = body;
-        }
-
-        public override void OnDestroy()
-        {
-            GameObject.Destroy(Owner.gameObject);
+            GameObject.Destroy(_bodyGameObject);
         }
 
         public void SetInput(in PlayerInputPacket input)
@@ -42,36 +42,23 @@ namespace ScavMP.Shared
             _currentInput = input;
         }
 
-        public override void Update()
+        protected override void Update()
         {
             base.Update();
 
             if (!IsServer && !IsLocalControlled)
                 return;
 
-            // Modify pos
-            NetworkedMoveDir = new Vector2(_currentInput.MoveX, _currentInput.MoveY);
             if (IsServer)
                 _position.Value = new Vector2(
-                    Owner.transform.position.x,
-                    Owner.transform.position.y
+                    _bodyComponent.transform.position.x,
+                    _bodyComponent.transform.position.y
                 );
         }
 
-        public override void VisualUpdate()
+        protected override void VisualUpdate()
         {
-            Owner.transform.position = _position.InterpolatedValue;
-        }
-
-        public void Spawn()
-        {
-            // ... init other components
-        }
-
-        public void Spawn(Vector2 position)
-        {
-            _position.Value = position;
-            Spawn();
+            _bodyComponent.transform.position = _position.InterpolatedValue;
         }
     }
 }

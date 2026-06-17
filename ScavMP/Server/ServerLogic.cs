@@ -76,7 +76,7 @@ public class ServerLogic : MonoBehaviour, ILiteNetEventListener
         var serverPlayer = _serverEntityManager.AddPlayer(new LiteNetLibNetPeer(peer, true));
         var player = _serverEntityManager.AddEntity<BaseExpie>(e =>
         {
-            e.Spawn();
+            // e.Position = new Vector2();
             e.Name.Value = joinPacket.UserName;
         });
         _serverEntityManager.AddController<BaseExpieController>(serverPlayer, player);

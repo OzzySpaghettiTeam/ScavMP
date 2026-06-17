@@ -5,16 +5,16 @@ namespace ScavMP.Shared;
 public class InternalRand
 {
     private Random _worldRng = new(1337);
-    private int seed = 1337;
+    private int _worldSeed = 1337;
 
-    // I didn't use it :(
+    // hope there will be chance to use this.
     public Random WorldRng => _worldRng;
     public int WorldSeed
     {
-        get { return seed; }
+        get { return _worldSeed; }
         set
         {
-            seed = value;
+            _worldSeed = value;
             _worldRng = new(value);
         }
     }

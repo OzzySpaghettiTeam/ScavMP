@@ -16,7 +16,7 @@ namespace ScavMP.Shared
             return this;
         }
 
-        public override void OnConstructed()
+        protected override void OnConstructed()
         {
             base.OnConstructed();
             Debug.Log($"OnPhysConstructed: {EntityManager.Mode}");
@@ -28,7 +28,7 @@ namespace ScavMP.Shared
             Physics.simulationMode = SimulationMode.Script;
         }
 
-        public override void Update()
+        protected override void Update()
         {
             PhysicsScene.Simulate(EntityManager.DeltaTimeF);
         }

@@ -32,6 +32,10 @@ namespace ScavMP
             Logger.Log($"Plugin {ModName} is loaded!");
         }
 
-        void OnDestroy() { }
+        void OnDestroy()
+        {
+            _harmony.UnpatchSelf();
+            Instance = null;
+        }
     }
 }

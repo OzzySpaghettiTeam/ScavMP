@@ -13,9 +13,9 @@ public class BaseExpieController : HumanControllerLogic<PlayerInputPacket, BaseE
         _mainCamera = Camera.main;
     }
 
-    public override void OnConstructed() { }
+    protected override void OnConstructed() { }
 
-    public override void Update()
+    protected override void Update()
     {
         base.Update();
 
@@ -52,13 +52,4 @@ public class BaseExpieController : HumanControllerLogic<PlayerInputPacket, BaseE
         input.LookPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         ControlledEntity.SetInput(input);
     }
-}
-
-public struct PlayerInputPacket
-{
-    public float MoveX;
-    public float MoveY;
-    public bool Jump;
-    public bool Crouch;
-    public Vector2 LookPos;
 }
